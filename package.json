@@ -1,0 +1,19 @@
+{
+  "name": "hapi-async-validation",
+  "version": "1.0.0",
+  "description": "Function and validators to handle asynchronous validation in hapi routes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsestudios/hapi-async-validation.git"
+  },
+  "author": "Synapse Studios, LLC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/synapsestudios/hapi-async-validation/issues"
+  },
+  "homepage": "https://github.com/synapsestudios/hapi-async-validation#readme"
+}
