@@ -1,6 +1,10 @@
 {
   root: true,
 
+  plugins: [
+    "jest"
+  ],
+
   env: {
     commonjs: true,
     es6: true,
@@ -8,7 +12,7 @@
   },
 
   parserOptions: {
-    ecmaVersion: 6,
+    ecmaVersion: 8,
     sourceType: 'module'
   },
 
