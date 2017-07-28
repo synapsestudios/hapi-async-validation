@@ -12,6 +12,9 @@ module.exports = bookshelf => (modelName, column, message, constraintOptions) =>
     constraintOptions || {}
   );
 
+  const where = {};
+  where[column] = value;
+
   return bookshelf.model(modelName)
     .where(where)
     .fetch(options.fetchOptions)
