@@ -132,4 +132,40 @@ test('next is called with values matching values from validators', () => {
     });
 });
 
-test('next is called with no errors when arrays of async validators are used');
+test('next is called with no errors when arrays of async validators are used', () => {
+  const validator = asyncValidation({
+    string: Joi.string(),
+  }, {
+    string: [
+      (value, options) => Promise.resolve('hello'),
+      (value, options) => Promise.resolve('hello'),
+    ]
+  });
+
+  expect.assertions(2);
+  const next = jest.fn();
+  return validator({string: 'hello'}, mockOptions, next)
+    .then(() => {
+      expect(next.mock.calls.length).toBe(1);
+      expect(next.mock.calls[0][0]).toBe(null);
+    });
+});
+
+test('next is called with errors when arrays of async validators are used and one fails', () => {
+  const validator = asyncValidation({
+    string: Joi.string(),
+  }, {
+    string: [
+      (value, options) => Promise.resolve('hello'),
+      (value, options) => Promise.reject(new ValidationError('message', 'type')),
+    ]
+  });
+
+  expect.assertions(2);
+  const next = jest.fn();
+  return validator({string: 'hello'}, mockOptions, next)
+    .then(() => {
+      expect(next.mock.calls.length).toBe(1);
+      expect(next.mock.calls[0][0]).toBeTruthy();
+    });
+});
