@@ -1,36 +1,22 @@
-var get = require('lodash.get');
+const get = require('lodash.get');
+const ValidationError = require('../ValidationError');
 
-module.exports = (bookshelf, ValidationError) => {
-  return (modelName, column, exceptColumn, contextValuePath, message) => {
-    return (value, options) => {
-      return new Promise((resolve, reject) => {
-        var Model = bookshelf.model(modelName);
-        var where = {};
+module.exports = bookshelf => (modelName, column, whereColumn, contextValuePath, message) => (value, options) => {
+  var where = {};
+  where[column] = value;
+  var query = bookshelf.model(modelName).where(where);
 
-        where[column] = value;
+  const contextValue = get(options.context, contextValuePath);
+  if (typeof contextValue !== 'undefined') {
+    query.where(whereColumn, '!=', contextValue);
+  }
 
-        var query = Model.where(where);
-
-        const contextValue = get(options.context, contextValuePath);
-        if (typeof contextValue !== 'undefined') {
-          query.where(exceptColumn, '!=', contextValue);
-        }
-
-        query.fetch()
-          .then(model => {
-            if (! model) {
-              resolve(value);
-            } else {
-              reject(new ValidationError(message || 'Row exists', 'rowNotExistsExcept'));
-            }
-          }
-          ).catch((err) => {
-            reject(err);
-          });
-      });
-    };
-  };
+  return query.fetch()
+    .then(model => {
+      if (! model) {
+        return value;
+      } else {
+        throw new ValidationError(message || 'Row exists', 'rowNotExistsExcept');
+      }
+    })
 };
-
-module.exports['@singleton'] = true;
-module.exports['@require'] = ['bookshelf', 'validator/validation-error'];
