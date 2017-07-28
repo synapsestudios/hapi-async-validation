@@ -1,4 +1,4 @@
-const RowExistsFactory = require('../row-exists');
+const RowExistsFactory = require('../src/bookshelf/row-exists');
 
 const mockOptions = {
   context: {

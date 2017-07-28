@@ -1,4 +1,4 @@
-const RowExistsWhereWhereFactory = require('../row-exists-where');
+const RowExistsWhereWhereFactory = require('../src/bookshelf/row-exists-where');
 
 const mockOptions = {
   context: {

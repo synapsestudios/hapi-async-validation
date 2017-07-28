@@ -1,6 +1,6 @@
-const asyncValidation = require('./asyncValidation');
+const asyncValidation = require('../src/asyncValidation');
 const Joi = require('joi');
-const ValidationError = require('./ValidationError');
+const ValidationError = require('../src/ValidationError');
 
 const mockOptions = {
   context: {
