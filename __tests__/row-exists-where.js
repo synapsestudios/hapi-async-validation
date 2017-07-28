@@ -1,21 +1,21 @@
-const RowExistsWhereWhereFactory = require('../src/bookshelf/row-exists-where');
+const RowExistsWhereFactory = require('../src/bookshelf/row-exists-where');
 const getMockBookshelf = require('../__mocks__/getMockBookshelf');
 const mockOptions = require('../__mocks__/mockOptions');
 mockOptions.context.params.id = 1;
 
 test(`injecting bookshelf returns a function and doesn't crash`, () => {
-  const RowExistsWhere = RowExistsWhereWhereFactory(getMockBookshelf().bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(getMockBookshelf().bookshelf);
   expect(typeof RowExistsWhere).toBe('function');
 });
 
 test(`injecting bookshelf + validation options returns a function and doesn't crash`, () => {
-  const RowExistsWhere = RowExistsWhereWhereFactory(getMockBookshelf().bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(getMockBookshelf().bookshelf);
   expect(typeof RowExistsWhere('model-name', 'column', 'where-column', 'context-value-path', 'message')).toBe('function');
 });
 
 test(`bookshelf methods are called the expected number of times with the right args`, () => {
   const bookshelfMocks = getMockBookshelf('return value');
-  const RowExistsWhere = RowExistsWhereWhereFactory(bookshelfMocks.bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(bookshelfMocks.bookshelf);
 
   expect.assertions(7);
   return RowExistsWhere('model-name', 'column', 'where-column', 'params.id', 'message')('value', mockOptions)
@@ -35,7 +35,7 @@ test(`bookshelf methods are called the expected number of times with the right a
 
 test(`validation succeeds when the row exists`, () => {
   const bookshelfMocks = getMockBookshelf('return value');
-  const RowExistsWhere = RowExistsWhereWhereFactory(bookshelfMocks.bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(bookshelfMocks.bookshelf);
 
   expect.assertions(1)
   return RowExistsWhere('model-name', 'column', 'where-column', 'params.id', 'message')('value', mockOptions)
@@ -46,7 +46,7 @@ test(`validation succeeds when the row exists`, () => {
 
 test(`validation fails when the row doesn't exist and default error is boom 404`, () => {
   const bookshelfMocks = getMockBookshelf(false);
-  const RowExistsWhere = RowExistsWhereWhereFactory(bookshelfMocks.bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(bookshelfMocks.bookshelf);
 
   expect.assertions(2);
   return RowExistsWhere('model-name', 'column', 'where-column', 'params.id', 'message')('value', mockOptions)
@@ -58,7 +58,7 @@ test(`validation fails when the row doesn't exist and default error is boom 404`
 
 test(`error returned is a ValidationError when return404 is false`, () => {
   const bookshelfMocks = getMockBookshelf(false);
-  const RowExistsWhere = RowExistsWhereWhereFactory(bookshelfMocks.bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(bookshelfMocks.bookshelf);
 
   expect.assertions(4);
   return RowExistsWhere('model-name', 'column', 'where-column', 'params.id', 'message', { return404: false })('value', mockOptions)
@@ -72,7 +72,7 @@ test(`error returned is a ValidationError when return404 is false`, () => {
 
 test('value is untouched if convert option is false', () => {
   const bookshelfMocks = getMockBookshelf('return value');
-  const RowExistsWhere = RowExistsWhereWhereFactory(bookshelfMocks.bookshelf);
+  const RowExistsWhere = RowExistsWhereFactory(bookshelfMocks.bookshelf);
 
   expect.assertions(1)
   return RowExistsWhere('model-name', 'column', 'where-column', 'params.id', 'message', { convert: false })('value', mockOptions)
