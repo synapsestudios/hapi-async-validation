@@ -1,50 +1,7 @@
 const RowExistsWhereWhereFactory = require('../src/bookshelf/row-exists-where');
-
-const mockOptions = {
-  context: {
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      host: 'localhost:9000',
-      connection: 'close',
-      'user-agent': 'Paw/3.1.2 (Macintosh; OS X/10.12.5) GCDHTTPRequest',
-      'content-length': '15'
-    },
-    params: {
-      id: 1
-    },
-    query: {},
-    auth: {
-      isAuthenticated: false,
-      credentials: null,
-      artifacts: null,
-      strategy: null,
-      mode: null,
-      error: null
-    },
-    app: {
-      route: {},
-      request: {}
-    }
-  }
-}
-
-const getMockBookshelf = (returnValue) => {
-  const bookshelf = {};
-  const model = jest.fn(() => bookshelf);
-  const where = jest.fn(() => bookshelf);
-  const fetch = jest.fn(() => Promise.resolve(returnValue));
-  const fetchAll = jest.fn(() => Promise.resolve(returnValue));
-
-  bookshelf.model = model;
-  bookshelf.where = where;
-  bookshelf.fetch = fetch;
-  bookshelf.fetchAll = fetchAll;
-
-  return {
-    bookshelf,
-    functions : { model, where, fetch, fetchAll },
-  };
-}
+const getMockBookshelf = require('../__mocks__/getMockBookshelf');
+const mockOptions = require('../__mocks__/mockOptions');
+mockOptions.context.params.id = 1;
 
 test(`injecting bookshelf returns a function and doesn't crash`, () => {
   const RowExistsWhere = RowExistsWhereWhereFactory(getMockBookshelf().bookshelf);
