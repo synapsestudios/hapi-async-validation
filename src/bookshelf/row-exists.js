@@ -1,44 +1,31 @@
 const Boom = require('boom');
+const ValidationError = require('../ValidationError');
 
-module.exports = (bookshelf, ValidationError) => {
-  return (modelName, column, message, constraintOptions) => {
-    return (value, validatorOptions) => {
-      const options = Object.assign(
-        {
-          convert: true,
-          return404: true,
-          fetchOptions: {}
-        },
-        validatorOptions || {},
-        constraintOptions || {}
-      );
-      return new Promise((resolve, reject) => {
-        const Model = bookshelf.model(modelName);
-        const where = {};
+module.exports = bookshelf => (modelName, column, message, constraintOptions) => (value, validatorOptions) => {
+  const options = Object.assign(
+    {
+      convert: true,
+      return404: true,
+      fetchOptions: {}
+    },
+    validatorOptions || {},
+    constraintOptions || {}
+  );
 
-        where[column] = value;
-
-        const query = Model.where(where);
-
-        query.fetch(options.fetchOptions)
-          .then(model => {
-            if (! model) {
-              if (options.return404) {
-                reject(Boom.notFound(message || 'Row does not exist'));
-              } else {
-                reject(new ValidationError(message || 'Row does not exist', 'rowExists'));
-              }
-            } else {
-              resolve(options.convert ? model : value);
-            }
-          }
-        ).catch((err) => {
-          reject(err);
-        });
-      });
-    };
-  };
+  return bookshelf.model(modelName)
+    .where(where)
+    .fetch(options.fetchOptions)
+    .then(model => {
+      if (!model) {
+        let throwable;
+        if (options.return404) {
+          throwable = Boom.notFound(message || 'Row does not exist');
+        } else {
+          throwable = new ValidationError(message || 'Row does not exist', 'rowExists');
+        }
+        throw throwable;
+      } else {
+        return options.convert ? model : value;
+      }
+    });
 };
-
-module.exports['@singleton'] = true;
-module.exports['@require'] = ['bookshelf', 'validator/validation-error'];
