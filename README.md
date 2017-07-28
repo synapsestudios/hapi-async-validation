@@ -20,7 +20,7 @@ A validator function is a function that returns a promise. The promise should re
 
 If the promise is rejected then the api will respond with the value from the rejected promise. If the value from the rejected promise is an instance of `ValidationError` then the error will be returned as a 401 in the same format as hapi's validation errors.
 
-```
+``` javascript
 const asyncValidation = require('@synapsestudios/hapi-async-validation').asyncValidation;
 
 // Simple example
