@@ -66,7 +66,25 @@ test('calls next with errors when async schema fails', () => {
     });
 });
 
-test('calls next with null when joi and async schema passes');
+test('calls next with null when joi and async schema passes', () => {
+  const validator = asyncValidation({
+    string: Joi.string(),
+  }, {
+    string: (value, options) => Promise.resolve('hello'),
+  });
+
+  expect.assertions(3);
+  const next = jest.fn();
+  return validator({string: 'hello'}, mockOptions, next)
+    .then(() => {
+      expect(next.mock.calls.length).toBe(1);
+      expect(next.mock.calls[0][0]).toBe(null);
+      expect(next.mock.calls[0][1]).toEqual({
+        string: 'hello',
+      });
+    });
+});
+
 test('error type matches type from validator');
 test('joiSchema exposed and matches passed schema');
 test('next is called with values matching values from validators');
