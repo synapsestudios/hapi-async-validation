@@ -24,5 +24,8 @@
     "hapi": "^16.5.0",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
   }
 }
