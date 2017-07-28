@@ -1,7 +1,8 @@
 const Boom = require('boom');
 const get = require('lodash/get');
+const ValidationError = require('../ValidationError');
 
-module.exports = (bookshelf, ValidationError) => {
+module.exports = bookshelf => {
   return (modelName, column, whereColumn, contextValuePath, message, constraintOptions) => {
     return (value, validatorOptions) => {
       const options = Object.assign(
@@ -45,6 +46,3 @@ module.exports = (bookshelf, ValidationError) => {
     };
   };
 };
-
-module.exports['@singleton'] = true;
-module.exports['@require'] = ['bookshelf', 'validator/validation-error'];
