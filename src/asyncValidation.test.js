@@ -113,6 +113,23 @@ test('joiSchema exposed and matches passed schema', () => {
   expect(validator.joiSchema).toEqual(joiSchema);
 });
 
-test('next is called with values matching values from validators');
+test('next is called with values matching values from validators', () => {
+  const validator = asyncValidation({
+    string: Joi.string(),
+  }, {
+    string: (value, options) => Promise.resolve('new value'),
+  });
+
+  expect.assertions(3);
+  const next = jest.fn();
+  return validator({string: 'hello'}, mockOptions, next)
+    .then(() => {
+      expect(next.mock.calls.length).toBe(1);
+      expect(next.mock.calls[0][0]).toBe(null);
+      expect(next.mock.calls[0][1]).toEqual({
+        string: 'new value',
+      });
+    });
+});
 
 test('next is called with no errors when arrays of async validators are used');
