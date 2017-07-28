@@ -44,7 +44,7 @@ test(`validation succeeds when the row doesn't exist`, () => {
     });
 });
 
-test(`validation fails when the row doesn't exist and error is ValidationError`, () => {
+test(`validation fails when the row exists and error is ValidationError`, () => {
   const bookshelfMocks = getMockBookshelf('return value');
   const RowNotExistsWhere = RowNotExistsWhereFactory(bookshelfMocks.bookshelf);
 
