@@ -1,29 +1,15 @@
-module.exports = (bookshelf, ValidationError) => {
-  return (modelName, column, message) => {
-    return (value, options) => {
-      return new Promise((resolve, reject) => {
-        const Model = bookshelf.model(modelName);
-        const where = {};
+const ValidationError = require('../ValidationError');
 
-        where[column] = value;
+module.exports = bookshelf => (modelName, column, message) => (value, options) => {
+  const where = {};
+  where[column] = value;
 
-        const query = Model.where(where);
-
-        query.fetch()
-          .then(model => {
-            if (! model) {
-              resolve(value);
-            } else {
-              reject(new ValidationError(message || 'Row exists', 'rowNotExists'));
-            }
-          }
-        ).catch((err) => {
-          reject(err);
-        });
-      });
-    };
-  };
+  return bookshelf.model(modelName).where(where).fetch()
+    .then(model => {
+      if (! model) {
+        return value;
+      } else {
+        throw new ValidationError(message || 'Row exists', 'rowNotExists');
+      }
+    });
 };
-
-module.exports['@singleton'] = true;
-module.exports['@require'] = ['bookshelf', 'validator/validation-error'];
