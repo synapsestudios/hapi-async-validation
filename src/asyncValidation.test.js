@@ -101,7 +101,17 @@ test('error type matches type from validator', () => {
     });
 });
 
-test('joiSchema exposed and matches passed schema');
+test('joiSchema exposed and matches passed schema', () => {
+  const joiSchema = {
+    string: Joi.string(),
+  };
+
+  const validator = asyncValidation(joiSchema, {
+    string: (value, options) => Promise.resolve('hello'),
+  });
+
+  expect(validator.joiSchema).toEqual(joiSchema);
+});
 
 test('next is called with values matching values from validators');
 
