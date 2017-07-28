@@ -1,6 +1,7 @@
 const get = require('lodash/get');
+const ValidationError = require('../ValidationError');
 
-module.exports = (bookshelf, ValidationError) => {
+module.exports = (bookshelf) => {
   return (modelName, column, whereColumn, contextValuePath, message) => {
     return (value, options) => {
       return new Promise((resolve, reject) => {
@@ -21,7 +22,7 @@ module.exports = (bookshelf, ValidationError) => {
             if (! model) {
               resolve(value);
             } else {
-              reject(new ValidationError(message || 'Row exists', 'rowNotExistsExcept'));
+              reject(new ValidationError(message || 'Row exists', 'rowNotExistsWhere'));
             }
           }
           ).catch((err) => {
@@ -31,6 +32,3 @@ module.exports = (bookshelf, ValidationError) => {
     };
   };
 };
-
-module.exports['@singleton'] = true;
-module.exports['@require'] = ['bookshelf', 'validator/validation-error'];
