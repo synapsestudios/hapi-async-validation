@@ -1,5 +1,5 @@
 const Boom = require('boom');
-const get = require('lodash/get');
+const get = require('lodash.get');
 const ValidationError = require('../ValidationError');
 
 module.exports = bookshelf => (modelName, column, whereColumn, contextValuePath, message, constraintOptions) => (value, validatorOptions) => {

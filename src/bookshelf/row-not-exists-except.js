@@ -1,4 +1,4 @@
-var get = require('lodash/get');
+var get = require('lodash.get');
 
 module.exports = (bookshelf, ValidationError) => {
   return (modelName, column, exceptColumn, contextValuePath, message) => {
