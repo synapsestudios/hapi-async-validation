@@ -1,11 +1,13 @@
 {
-  "name": "hapi-async-validation",
+  "name": "@synapsestudios/hapi-async-validation",
   "version": "1.0.0",
   "description": "Function and validators to handle asynchronous validation in hapi routes",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watch",
-    "start": "nodemon example-api/server"
+    "test": "jest",
+    "start": "nodemon example-api/server",
+    "lint": "eslint src/",
+    "prepublish": "npm run lint && npm test"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,8 @@
     "hapi": "^16.1.0"
   },
   "devDependencies": {
+    "eslint": "^4.3.0",
+    "eslint-plugin-jest": "^20.0.3",
     "hapi": "^16.5.0",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
