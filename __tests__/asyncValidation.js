@@ -11,6 +11,7 @@ const mockOptions = {
       'user-agent': 'Paw/3.1.2 (Macintosh; OS X/10.12.5) GCDHTTPRequest',
       'content-length': '15'
     },
+    abortEarly: true,
     params: {},
     query: {},
     auth: {
@@ -33,21 +34,19 @@ test(`returns a function and doesn't crash`, () => {
   expect(typeof validator).toBe('function');
 });
 
-test('calls next with errors when joi schema fails', () => {
+test.only('return with errors when joi schema fails', () => {
   const validator = asyncValidation({
     string: Joi.string(),
   }, {
     string: (value, options) => Promise.resolve(123),
   });
 
-  const next = jest.fn();
-  expect.assertions(3);
-  return validator({string: 123}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBeTruthy();
-      expect(next.mock.calls[0][0].isJoi).toBe(true);
-    });
+  expect.assertions(2);
+  return validator({string: 123}, mockOptions)
+    .then((res) => {
+      expect(res.isJoi).toBeTruthy();
+      expect(res.name).toMatch('ValidationError');
+    })
 });
 
 test('calls next with errors when async schema fails', () => {
