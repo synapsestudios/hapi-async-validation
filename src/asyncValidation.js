@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const callValidator = (validator, values, path, options, errors, next) => {
+const callValidator = (validator, values, path, options, errors) => {
   return validator(values[path], options)
     .then(newValue => {
       values[path] = newValue;
@@ -23,7 +23,7 @@ const callValidator = (validator, values, path, options, errors, next) => {
     });
 }
 
-const newFunc = (joiSchema, customSchema) => {
+const asyncValidation = (joiSchema, customSchema) => {
   const validationFunction = async (values, options) => {
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
@@ -116,4 +116,4 @@ const oldFunc = (joiSchema, customSchema) => {
   return validationFunction;
 };
 
-module.exports = newFunc;
+module.exports = asyncValidation;
