@@ -7,7 +7,7 @@ const callValidator = (validator, values, path, options, errors, next) => {
     })
     .catch(err => {
       if (err.name !== 'ValidationError') { // A real error happened
-        return next(err, values);
+        return values;
       }
 
       errors.details.push({
@@ -18,7 +18,7 @@ const callValidator = (validator, values, path, options, errors, next) => {
       });
 
       if (options.abortEarly) {
-        next(err, values);
+        return err;
       }
     });
 }
@@ -54,10 +54,8 @@ const newFunc = (joiSchema, customSchema) => {
       return Promise.all(promises)
         .then(() => {
           if (errors.details.length) {
-            // console.log('i should throw an error', errors)
             return errors;
           } else {
-            // console.log('i should return values', values);
             return values;
           }
         })
