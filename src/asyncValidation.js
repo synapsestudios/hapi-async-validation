@@ -6,7 +6,8 @@ const callValidator = (validator, values, path, options, errors) => {
       values[path] = newValue;
     })
     .catch(err => {
-      if (err.name !== 'ValidationError') { // A real error happened
+      if (err.name !== 'ValidationError') {
+        // A real error happened
         return values;
       }
 
@@ -21,7 +22,7 @@ const callValidator = (validator, values, path, options, errors) => {
         return err;
       }
     });
-}
+};
 
 // Mix JOI validation with our own custom validators
 const asyncValidation = (joiSchema, customSchema) => {
@@ -40,25 +41,23 @@ const asyncValidation = (joiSchema, customSchema) => {
     if (query.length === 0) {
       throw new Error('Not found');
     }
-    console.log(query);
-
     return validated;
     return Joi.validate(values, schema, options, (errors, values) => {
       if (errors && options.abortEarly) {
         return errors;
-      } else if (! errors) {
+      } else if (!errors) {
         errors = new Error();
         errors.details = [];
       }
 
       const promises = Object.keys(customSchema).reduce((accumulator, path) => {
-        if (! values[path]) {
+        if (!values[path]) {
           return accumulator;
         }
 
         if (Array.isArray(customSchema[path])) {
           customSchema[path].forEach(validator => {
-            accumulator.push(callValidator(validator, values, path, options, errors))
+            accumulator.push(callValidator(validator, values, path, options, errors));
           });
         } else {
           accumulator.push(callValidator(customSchema[path], values, path, options, errors));
@@ -74,11 +73,9 @@ const asyncValidation = (joiSchema, customSchema) => {
             return values;
           }
         })
-        .catch((err) => {
+        .catch(err => {
           return err;
         });
-      console.log('All is \n\n');
-      console.log(all)
     });
   };
 
@@ -86,8 +83,8 @@ const asyncValidation = (joiSchema, customSchema) => {
   return validationFunction;
 };
 
-async function testValidation () {
+async function testValidation() {
   return new Error('fake err');
-};
+}
 
 module.exports = asyncValidation;
