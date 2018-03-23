@@ -26,9 +26,23 @@ const callValidator = (validator, values, path, options, errors) => {
 // Mix JOI validation with our own custom validators
 const asyncValidation = (joiSchema, customSchema) => {
   const validationFunction = async (values, options) => {
+    // return values;
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
 
+    const validated = Joi.validate(values, schema, options);
+
+    if (validated.errors) {
+      return validated;
+    }
+
+    const query = await customSchema.user_id(values.user_id);
+    if (query.length === 0) {
+      throw new Error('Not found');
+    }
+    console.log(query);
+
+    return validated;
     return Joi.validate(values, schema, options, (errors, values) => {
       if (errors && options.abortEarly) {
         return errors;
@@ -52,7 +66,7 @@ const asyncValidation = (joiSchema, customSchema) => {
         return accumulator;
       }, []);
 
-      return Promise.all(promises)
+      const all = Promise.all(promises)
         .then(() => {
           if (errors.details.length) {
             return errors;
@@ -63,11 +77,17 @@ const asyncValidation = (joiSchema, customSchema) => {
         .catch((err) => {
           return err;
         });
+      console.log('All is \n\n');
+      console.log(all)
     });
   };
 
   validationFunction.joiSchema = joiSchema;
   return validationFunction;
+};
+
+async function testValidation () {
+  return new Error('fake err');
 };
 
 module.exports = asyncValidation;
