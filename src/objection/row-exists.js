@@ -21,25 +21,21 @@ module.exports = Model => (modelName, column, message, constraintOptions) => (va
 
 
   }
-  console.log(`table value is ${value}`);
+
   return Table
     .query()
     .where(column, '=', value)
-
-  // return bookshelf.model(modelName)
-  //   .where(where)
-  //   .fetch(options.fetchOptions)
-  //   .then(model => {
-  //     if (!model) {
-  //       let throwable;
-  //       if (options.return404) {
-  //         throwable = Boom.notFound(message || 'Row does not exist');
-  //       } else {
-  //         throwable = new ValidationError(message || 'Row does not exist', 'rowExists');
-  //       }
-  //       throw throwable;
-  //     } else {
-  //       return options.convert ? model : value;
-  //     }
-  //   });
+    .then(function(rows){
+      if (rows.length === 0) {
+        let throwable;
+        if (options.return404) {
+          throwable = Boom.notFound(message || 'Row does not exist');
+        } else {
+          throwable = new ValidationError(message || 'Row does not exist', 'rowExists');
+        }
+        throw throwable;
+      } else {
+        return rows
+      }
+    });
 };
