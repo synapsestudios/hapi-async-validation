@@ -30,7 +30,11 @@ module.exports = Model => (modelName, column, message, constraintOptions) => (va
         }
         throw throwable;
       } else {
-        return rows;
+        if (options.convert === true) {
+          return rows;
+        } else {
+          return value;
+        }
       }
     });
 };
