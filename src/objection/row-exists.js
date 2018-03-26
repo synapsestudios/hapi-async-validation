@@ -30,7 +30,7 @@ module.exports = (Model, column, message, constraintOptions) => (value, validato
         throw throwable;
       } else {
         if (options.convert === true) {
-          return rows;
+          return rows[0];
         } else {
           return value;
         }
