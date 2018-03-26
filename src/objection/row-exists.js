@@ -1,20 +1,10 @@
 const Boom = require('boom');
 const ValidationError = require('../ValidationError');
-const _ = require('lodash');
+const merge = require('lodash/merge');
 
 module.exports = (Model, column, message, constraintOptions) => (value, validatorOptions) => {
-  // const options = Object.assign(
-  //   {
-  //     convert: true,
-  //     return404: true,
-  //     fetchOptions: { eager: '', eagerAlgorithm: 'WhereInEagerAlgorithm' },
-  //   },
-  //   validatorOptions || {},
-  //   constraintOptions || {}
-  // );
-  //
   // WhereInEagerAlgorithm is Objection's default.
-  const options = _.merge(
+  const options = merge(
     {
       convert: true,
       return404: true,
