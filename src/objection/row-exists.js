@@ -1,25 +1,20 @@
 const Boom = require('boom');
 const ValidationError = require('../ValidationError');
 
-module.exports = Model => (modelName, column, message, constraintOptions) => (value, validatorOptions) => {
+module.exports = (Model, column, message, constraintOptions) => (value, validatorOptions) => {
   const options = Object.assign(
     {
       convert: true,
       return404: true,
-      fetchOptions: {},
+      fetchOptions: { eager: '' },
     },
     validatorOptions || {},
     constraintOptions || {}
   );
 
-  class Table extends Model {
-    static get tableName() {
-      return modelName;
-    }
-  }
-
-  return Table.query()
+  return Model.query()
     .where(column, '=', value)
+    .eager(constraintOptions.fetchOptions.eager)
     .then(function(rows) {
       if (rows.length === 0) {
         let throwable;
