@@ -1,19 +1,29 @@
 const Boom = require('boom');
 const ValidationError = require('../ValidationError');
+const _ = require('lodash');
 
 module.exports = (Model, column, message, constraintOptions) => (value, validatorOptions) => {
-  const options = Object.assign(
-    {
-      convert: true,
-      return404: true,
-      fetchOptions: { eager: '' },
-    },
+  // const options = Object.assign(
+  //   {
+  //     convert: true,
+  //     return404: true,
+  //     fetchOptions: { eager: '', eagerAlgorithm: 'WhereInEagerAlgorithm' },
+  //   },
+  //   validatorOptions || {},
+  //   constraintOptions || {}
+  // );
+  //
+  // WhereInEagerAlgorithm is Objection's default.
+  const options = _.merge(
+    { convert: true, return404: true, fetchOptions: { eager: '', eagerAlgorithm: 'WhereInEagerAlgorithm' } },
     validatorOptions || {},
     constraintOptions || {}
   );
 
   return Model.query()
     .where(column, '=', value)
+    .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm]) // [constraintOptions.fetchOptions.eagerAlgorithm]
+    .eagerOptions({ joinOperation: 'leftJoin' })
     .eager(constraintOptions.fetchOptions.eager)
     .then(function(rows) {
       if (rows.length === 0) {
