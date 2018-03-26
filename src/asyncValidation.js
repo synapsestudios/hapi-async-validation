@@ -8,7 +8,7 @@ const callValidator = (validator, values, path, options, errors) => {
     .catch(err => {
       if (err.name !== 'ValidationError') {
         // A real error happened
-        return values;
+        throw err;
       }
 
       errors.details.push({
@@ -19,7 +19,7 @@ const callValidator = (validator, values, path, options, errors) => {
       });
 
       if (options.abortEarly) {
-        return err;
+        throw err;
       }
     });
 };
@@ -37,54 +37,35 @@ const asyncValidation = (joiSchema, customSchema) => {
       return validated;
     }
 
-    const query = await customSchema.user_id(values.user_id);
-    if (query.length === 0) {
-      throw new Error('Not found');
-    }
-    return validated;
-    return Joi.validate(values, schema, options, (errors, values) => {
-      if (errors && options.abortEarly) {
-        return errors;
-      } else if (!errors) {
-        errors = new Error();
-        errors.details = [];
+    const errors = new Error();
+    errors.details = [];
+    const promises = Object.keys(customSchema).reduce((accumulator, path) => {
+      if (!values[path]) {
+        return accumulator;
       }
 
-      const promises = Object.keys(customSchema).reduce((accumulator, path) => {
-        if (!values[path]) {
-          return accumulator;
-        }
-
-        if (Array.isArray(customSchema[path])) {
-          customSchema[path].forEach(validator => {
-            accumulator.push(callValidator(validator, values, path, options, errors));
-          });
-        } else {
-          accumulator.push(callValidator(customSchema[path], values, path, options, errors));
-        }
-        return accumulator;
-      }, []);
-
-      const all = Promise.all(promises)
-        .then(() => {
-          if (errors.details.length) {
-            return errors;
-          } else {
-            return values;
-          }
-        })
-        .catch(err => {
-          return err;
+      if (Array.isArray(customSchema[path])) {
+        customSchema[path].forEach(validator => {
+          accumulator.push(callValidator(validator, values, path, options, errors));
         });
+      } else {
+        accumulator.push(callValidator(customSchema[path], values, path, options, errors));
+      }
+      return accumulator;
+    }, []);
+
+    const all = Promise.all(promises).then(() => {
+      if (errors.details.length) {
+        throw errors;
+      } else {
+        return values;
+      }
     });
+    return all;
   };
 
   validationFunction.joiSchema = joiSchema;
   return validationFunction;
 };
-
-async function testValidation() {
-  return new Error('fake err');
-}
 
 module.exports = asyncValidation;
