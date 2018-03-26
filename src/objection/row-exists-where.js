@@ -1,6 +1,23 @@
+// TODO use actual models that have relations working
 const Boom = require('boom');
 const get = require('lodash.get');
 const ValidationError = require('../ValidationError');
+
+function mapContextValues(whereArray, validatorOptions) {
+  return whereArray.map(function(whereClause, index) {
+    if (whereClause[2].slice(0, 3) !== 'cv:') {
+      return whereClause;
+    } else {
+      const contextValuePath = whereClause[2].slice(3);
+      const contextValueToMap = get(validatorOptions.context, contextValuePath);
+      if (contextValueToMap === undefined) {
+        throw new Error('Context Value is undefined');
+      }
+      whereClause[2] = contextValueToMap;
+      return whereClause;
+    }
+  });
+}
 
 function whereBuilder(validatedValue, whereArray, objectionModel) {
   if (whereArray.length < 2) {
@@ -19,8 +36,9 @@ function whereBuilder(validatedValue, whereArray, objectionModel) {
   return objectionModel;
 }
 
-module.exports = Model => (modelName, column, whereArr, message, constraintOptions) =>
+module.exports = Model => (modelName, column, whereArr, message, constraintOptions, contextValuePath) =>
   function(value, validatorOptions) {
+    mapContextValues(whereArr, validatorOptions);
     const options = Object.assign(
       {
         convert: true,
@@ -36,7 +54,6 @@ module.exports = Model => (modelName, column, whereArr, message, constraintOptio
         return modelName;
       }
     }
-    const currentWhere = whereArr[0];
     return whereBuilder(value, whereArr, Table.query()).then(function(rows) {
       if (rows.length === 0) {
         let throwable;
