@@ -15,7 +15,11 @@ module.exports = (Model, column, message, constraintOptions) => (value, validato
   //
   // WhereInEagerAlgorithm is Objection's default.
   const options = _.merge(
-    { convert: true, return404: true, fetchOptions: { eager: '', eagerAlgorithm: 'WhereInEagerAlgorithm' } },
+    {
+      convert: true,
+      return404: true,
+      fetchOptions: { eager: '', eagerOptions: {}, eagerAlgorithm: 'WhereInEagerAlgorithm' },
+    },
     validatorOptions || {},
     constraintOptions || {}
   );
@@ -23,7 +27,7 @@ module.exports = (Model, column, message, constraintOptions) => (value, validato
   return Model.query()
     .where(column, '=', value)
     .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm]) // [constraintOptions.fetchOptions.eagerAlgorithm]
-    .eagerOptions({ joinOperation: 'leftJoin' })
+    .eagerOptions(constraintOptions.fetchOptions.eagerOptions)
     .eager(constraintOptions.fetchOptions.eager)
     .then(function(rows) {
       if (rows.length === 0) {
