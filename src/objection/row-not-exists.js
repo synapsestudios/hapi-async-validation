@@ -1,17 +1,9 @@
 const ValidationError = require('../ValidationError');
 
-module.exports = Model => (modelName, column, message) => (value, options) => {
-
-  class Table extends Model {
-    static get tableName() {
-      return modelName;
-    }
-  }
-
-  return Table
-    .query()
+module.exports = (Model, column, message, constraintOptions) => (value, options) => {
+  return Model.query()
     .where(column, '=', value)
-    .then(function(rows){
+    .then(function(rows) {
       if (rows.length === 0) {
         return value;
       } else {
