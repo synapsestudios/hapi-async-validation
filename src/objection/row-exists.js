@@ -16,9 +16,9 @@ module.exports = (Model, column, message, constraintOptions) => (value, validato
 
   return Model.query()
     .where(column, '=', value)
-    .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm]) // [constraintOptions.fetchOptions.eagerAlgorithm]
-    .eagerOptions(constraintOptions.fetchOptions.eagerOptions)
-    .eager(constraintOptions.fetchOptions.eager)
+    .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm])
+    .eagerOptions(options.fetchOptions.eagerOptions || {})
+    .eager(options.fetchOptions.eager)
     .then(function(rows) {
       if (rows.length === 0) {
         let throwable;
