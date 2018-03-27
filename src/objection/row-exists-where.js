@@ -3,7 +3,7 @@ const get = require('lodash.get');
 const merge = require('lodash/merge');
 const ValidationError = require('../ValidationError');
 
-module.exports = (Model, column, whereArr, contextValuePath, message, constraintOptions) =>
+module.exports = (Model, column, whereColumn, contextValuePath, message, constraintOptions) =>
   function(value, validatorOptions) {
     const options = merge(
       {
@@ -17,7 +17,8 @@ module.exports = (Model, column, whereArr, contextValuePath, message, constraint
     const contextValue = get(options.context, contextValuePath);
 
     return Model.query()
-      .where(column, '=', contextValue)
+      .where(column, '=', value)
+      .where(whereColumn, '=', contextValue)
       .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm])
       .eagerOptions(options.fetchOptions.eagerOptions)
       .eager(options.fetchOptions.eager)
