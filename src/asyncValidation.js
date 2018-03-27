@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const ValidationError = require('./ValidationError');
 
 const callValidator = (validator, values, path, options, errors) => {
   return validator(values[path], options)
@@ -18,8 +19,9 @@ const callValidator = (validator, values, path, options, errors) => {
         data: err.data,
       });
 
+      // Todo return Joi error object here
       if (options.abortEarly) {
-        throw err;
+        return err;
       }
     });
 };
@@ -27,17 +29,16 @@ const callValidator = (validator, values, path, options, errors) => {
 // Mix JOI validation with our own custom validators
 const asyncValidation = (joiSchema, customSchema) => {
   const validationFunction = async (values, options) => {
-    // return values;
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
 
     const validated = Joi.validate(values, schema, options);
 
-    if (validated.errors) {
+    if (validated.error) {
       return validated;
     }
 
-    const errors = new Error();
+    const errors = new Error('ValidationError');
     errors.details = [];
     const promises = Object.keys(customSchema).reduce((accumulator, path) => {
       if (!values[path]) {
@@ -54,9 +55,10 @@ const asyncValidation = (joiSchema, customSchema) => {
       return accumulator;
     }, []);
 
-    const all = Promise.all(promises).then(() => {
+    const all = await Promise.all(promises).then(results => {
       if (errors.details.length) {
-        throw errors;
+        const JoiErrorMessage = ValidationError.JoiFactory(errors.details);
+        return JoiErrorMessage;
       } else {
         return values;
       }
