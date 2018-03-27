@@ -16,9 +16,12 @@ module.exports = (Model, column, whereColumn, contextValuePath, message, constra
     );
     const contextValue = get(options.context, contextValuePath);
 
-    return Model.query()
-      .where(column, '=', value)
-      .where(whereColumn, '=', contextValue)
+    const query = Model.query().where(column, '=', value);
+
+    if (typeof contextValue !== 'undefined') {
+      query.where(whereColumn, '=', contextValue);
+    }
+    return query
       .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm])
       .eagerOptions(options.fetchOptions.eagerOptions)
       .eager(options.fetchOptions.eager)
