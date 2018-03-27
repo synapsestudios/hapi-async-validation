@@ -35,30 +35,38 @@ test(`returns a function and doesn't crash`, () => {
   expect(typeof validator).toBe('function');
 });
 
-test('return with errors when joi schema fails', async () => {
-  const validator = asyncValidation({
-    string: Joi.string(),
-  }, {
-    string: (value, options) => Promise.resolve(123),
-  });
+test('throw error when joi schema fails', async () => {
+  try {
+    const validator = asyncValidation({
+      string: Joi.string(),
+    }, {
+      string: (value, options) => Promise.resolve(123),
+    });
 
-  const res = await validator({string: 123}, mockOptions);
-  expect(res.isJoi).toBeTruthy();
-  expect(res.name).toMatch('ValidationError');
+    const res = await validator({string: 123}, mockOptions);
+  }
+  catch (error) {
+    expect(error.isJoi).toBeTruthy();
+    expect(error.name).toMatch('ValidationError');
+  }
 });
 
 test('return with errors when async schema fails', async () => {
-  const validator = asyncValidation({
-    string: Joi.string(),
-  }, {
-    string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
-  });
-
   expect.assertions(3);
-  const res = await validator({string: 'hello'}, mockOptions)
-  expect(res.details[0].message).toEqual('message');
-  expect(res.isJoi).toBeFalsy();
-  expect(typeof res).toBe('object');
+  try {
+    const validator = asyncValidation({
+      string: Joi.string(),
+    }, {
+      string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
+    });
+
+    const res = await validator({string: 'hello'}, mockOptions)
+  }
+  catch (error) {
+    expect(error.details[0].message).toEqual('message');
+    expect(error.isJoi).toBeFalsy();
+    expect(typeof error).toBe('object');
+  }
 });
 
 test('returns with null when joi and async schema passes', async () => {
@@ -75,15 +83,19 @@ test('returns with null when joi and async schema passes', async () => {
 });
 
 test('error type matches type from validator', async () => {
-  const validator = asyncValidation({
-    string: Joi.string(),
-  }, {
-    string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
-  });
-
   expect.assertions(1);
-  const res = await validator({string: 'hello'}, mockOptions)
-  expect(res.details[0].type).toBe('type');
+  try {
+    const validator = asyncValidation({
+      string: Joi.string(),
+    }, {
+      string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
+    });
+
+    const res = await validator({string: 'hello'}, mockOptions)
+  }
+  catch (error) {
+    expect(error.details[0].type).toBe('type');
+  }
 });
 
 test('joiSchema exposed and matches passed schema', async () => {
@@ -127,7 +139,9 @@ test('next is called with no errors when arrays of async validators are used', a
   expect(typeof res).toBe('object');
 });
 
-test('returns with errors when arrays of async validators are used and one fails', async () => {
+test('throws an error when arrays of async validators are used and one fails', async () => {
+  expect.assertions(2);
+  try {
   const validator = asyncValidation({
     string: Joi.string(),
   }, {
@@ -136,9 +150,10 @@ test('returns with errors when arrays of async validators are used and one fails
       (value, options) => Promise.reject(new ValidationError('message', 'type')),
     ]
   });
-
-  expect.assertions(2);
   const res = await validator({string: 'hello'}, mockOptions);
-  expect(typeof res).toBe('object');
-  expect(res.details[0].type).toBe('type')
+  }
+  catch (error) {
+    expect(typeof error).toBe('object');
+    expect(error.details[0].type).toBe('type')
+  }
 });
