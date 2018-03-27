@@ -19,7 +19,6 @@ const callValidator = (validator, values, path, options, errors) => {
         data: err.data,
       });
 
-      // Todo return Joi error object here
       if (options.abortEarly) {
         return err;
       }
