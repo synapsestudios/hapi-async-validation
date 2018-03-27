@@ -31,7 +31,7 @@ const extended = message =>
   Joi.extend(joi => ({
     name: 'ValidationError',
     language: {
-      message: 'Validation Error',
+      message: message,
     },
     pre(value, state, options) {
       return value;
