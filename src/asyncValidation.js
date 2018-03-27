@@ -11,7 +11,7 @@ const callValidator = (validator, values, path, options, errors) => {
       }
 
       errors.details.push({
-        path: path,
+        path: [path],
         message: err.message,
         type: err.type,
         data: err.data,
@@ -55,14 +55,11 @@ const asyncValidation = (joiSchema, customSchema) => {
       return Promise.all(promises)
         .then(() => {
           if (errors.details.length) {
-            return errors;
+            throw errors;
           } else {
             return values;
           }
         })
-        .catch((err) => {
-          return err;
-        });
     });
   };
 
