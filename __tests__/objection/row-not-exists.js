@@ -1,52 +1,78 @@
-const RowNotExistsFactoryy = require('../../src/bookshelf/row-not-exists');
-const getMockBookshelf = require('../../__mocks__/getMockBookshelf');
+const RowNotExistsFactory = require('../../src/objection/row-not-exists');
+const getMockObjection= require('../../__mocks__/getMockObjection');
 const mockOptions = require('../../__mocks__/mockOptions');
 
-test(`injecting bookshelf returns a function and doesn't crash`, () => {
-  const RowNotExists = RowNotExistsFactoryy(getMockBookshelf().bookshelf);
+test(`injecting Model returns a function and doesn't crash`, () => {
+  const mockObjection = getMockObjection(['value']);
+  const Model = mockObjection.Model;
+  const RowNotExists = RowNotExistsFactory(Model, 'column', 'message', {fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
   expect(typeof RowNotExists).toBe('function');
 });
 
-test(`injecting bookshelf + validation options returns a function and doesn't crash`, () => {
-  const RowNotExists = RowNotExistsFactoryy(getMockBookshelf().bookshelf);
-  expect(typeof RowNotExists('model-name', 'column', 'message')).toBe('function');
+test(`injecting Model + validation options returns a function and doesn't crash`, () => {
+  const mockObjection = getMockObjection(['value']);
+  const Model = mockObjection.Model;
+  const RowNotExists = RowNotExistsFactory(Model, 'column', 'message', {fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
+  expect(typeof RowNotExists).toBe('function');
 });
 
-test(`bookshelf methods are called the expected number of times with the right args`, () => {
-  const bookshelfMocks = getMockBookshelf(false);
-  const RowNotExists = RowNotExistsFactoryy(bookshelfMocks.bookshelf);
+test(`Model methods are called the expected number of times with the right args`, () => {
+  const mockObjection = getMockObjection([]);
+  const Model = mockObjection.Model;
+  const RowNotExists = RowNotExistsFactory(Model, 'column', 'message', {fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
 
   expect.assertions(5);
-  return RowNotExists('model-name', 'column', 'message')('value', mockOptions)
+  return RowNotExists('value', mockOptions)
     .then(value => {
-      const { model, where, fetch } = bookshelfMocks.functions;
-      expect(model.mock.calls.length).toBe(1);
-      expect(model.mock.calls[0][0]).toBe('model-name');
-
+      const { query, model, where, eager, eagerAlgorithm, eagerOptions } = mockObjection.functions;
+      expect(query.mock.calls.length).toBe(1);
       expect(where.mock.calls.length).toBe(1);
-      expect(where.mock.calls[0][0]).toEqual({column: 'value'});
+      expect(where.mock.calls[0][0]).toEqual('column');
+      expect(where.mock.calls[0][1]).toEqual('=');
+      expect(where.mock.calls[0][2]).toEqual('value');
 
-      expect(fetch.mock.calls.length).toBe(1);
     });
 });
 
-test(`validation succeeds when the row doesn't exists`, () => {
-  const bookshelfMocks = getMockBookshelf(false);
-  const RowNotExists = RowNotExistsFactoryy(bookshelfMocks.bookshelf);
+test(`validation succeeds when the row doesn't exist`, () => {
+  const mockObjection = getMockObjection([]);
+  const Model = mockObjection.Model;
+  const RowNotExists = RowNotExistsFactory(Model, 'column', 'message', {fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
 
   expect.assertions(1)
-  return RowNotExists('model-name', 'column', 'message')('value', mockOptions)
+  return RowNotExists('value', mockOptions)
     .then(value => {
       expect(value).toBe('value');
     });
 });
 
 test(`validation fails when the row exists and error returned is a ValidationError`, () => {
-  const bookshelfMocks = getMockBookshelf('return value');
-  const RowNotExists = RowNotExistsFactoryy(bookshelfMocks.bookshelf);
+  const mockObjection = getMockObjection(['value']);
+  const Model = mockObjection.Model;
+  const RowNotExists = RowNotExistsFactory(Model, 'column', 'message', {fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
 
   expect.assertions(4);
-  return RowNotExists('model-name', 'column', 'message')('value', mockOptions)
+  return RowNotExists('value', mockOptions)
     .catch(error => {
       expect(error.isBoom).toBeFalsy();
       expect(error.name).toBe('ValidationError');
