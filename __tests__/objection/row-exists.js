@@ -3,13 +3,13 @@ const getMockObjection= require('../../__mocks__/getMockObjection');
 const mockOptions = require('../../__mocks__/mockOptions');
 
 test(`injecting objection + validation options returns a function and doesn't crash`, () => {
-const Model = getMockObjection(['value']).Model;
+  const Model = getMockObjection(['value']).Model;
   const RowExists = RowExistsFactory(Model, 'column', 'message', 'constraintOptions');
   expect(typeof RowExists).toBe('function');
 });
 
 test(`Model methods are called the expected number of times with the right args`, async () => {
-const mockObjection = getMockObjection(['value']);
+  const mockObjection = getMockObjection(['value']);
   const Model = mockObjection.Model;
   const RowExists = RowExistsFactory(Model, 'column', 'message', {fetchOptions: {
     eagerOptions: {option: 'example'},
@@ -73,7 +73,6 @@ test(`error returned is a ValidationError when return404 is false`, async () => 
     eagerAlgorithm: 'myalgorithm',
     eager: 'eager',
   }});
-
   expect.assertions(4);
   await RowExists('value', mockOptions)
     .catch(error => {
