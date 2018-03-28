@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const ValidationError = require('./ValidationError');
+const JoiFactory = require('./JoiFactory');
 
 const callValidator = (validator, values, path, options, errors) => {
   return validator(values[path], options)
@@ -7,10 +7,10 @@ const callValidator = (validator, values, path, options, errors) => {
       values[path] = newValue;
     })
     .catch(err => {
-      if (err.name !== 'ValidationError') {
-        // A real error happened
-        throw err;
-      }
+      // if (err.name !== 'ValidationError') {
+      //   // A real error happened
+      //   throw err;
+      // }
 
       errors.details.push({
         path: [path],
@@ -20,7 +20,7 @@ const callValidator = (validator, values, path, options, errors) => {
       });
 
       if (options.abortEarly) {
-        return err;
+        err;
       }
     });
 };
@@ -56,7 +56,7 @@ const asyncValidation = (joiSchema, customSchema) => {
 
     const all = await Promise.all(promises).then(results => {
       if (errors.details.length) {
-        const JoiErrorMessage = ValidationError.JoiFactory(errors.details);
+        const JoiErrorMessage = JoiFactory(errors.details);
         return JoiErrorMessage;
       } else {
         return values;
