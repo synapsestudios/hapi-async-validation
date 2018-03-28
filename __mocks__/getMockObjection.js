@@ -1,9 +1,7 @@
 module.exports = (returnValue) => {
   const objection = {};
   const Model = {}//jest.fn(() => Model);
-  const qb = Promise.resolve(returnValue)//new Promise((resolve) => {
-    // resolve(returnValue);
-  // });
+  const qb = Promise.resolve(returnValue)
   const query = jest.fn(() => Promise.resolve(qb));
   const where = jest.fn(() => Promise.resolve(qb));
   const eagerAlgorithm = jest.fn(() => Promise.resolve(qb));
