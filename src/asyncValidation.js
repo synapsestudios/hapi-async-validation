@@ -15,7 +15,7 @@ const callValidator = (validator, values, path, options, errors) => {
       });
 
       if (options.abortEarly) {
-        err;
+        throw err;
       }
     });
 };

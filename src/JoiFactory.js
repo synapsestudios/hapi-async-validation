@@ -1,17 +1,5 @@
 const Joi = require('joi');
 
-module.exports = function JoiFactory(errorDetails) {
-  const keysFromBadValues = {};
-  const ErrorMessageSchema = {};
-  errorDetails.forEach(detail => {
-    keysFromBadValues[detail.path] = true; // An arbitrary value to get the key in the object.
-    ErrorMessageSchema[detail.path] = extended(detail.message)
-      .ValidationError()
-      .message();
-  });
-  return Joi.validate(keysFromBadValues, ErrorMessageSchema, { abortEarly: false });
-};
-
 const extended = message =>
   Joi.extend(joi => ({
     name: 'ValidationError',
@@ -33,3 +21,15 @@ const extended = message =>
       },
     ],
   }));
+
+module.exports = function JoiFactory(errorDetails) {
+  const keysFromBadValues = {};
+  const ErrorMessageSchema = {};
+  errorDetails.forEach(detail => {
+    keysFromBadValues[detail.path] = true; // An arbitrary value to get the key in the object.
+    ErrorMessageSchema[detail.path] = extended(detail.message)
+      .ValidationError()
+      .message();
+  });
+  return Joi.validate(keysFromBadValues, ErrorMessageSchema, { abortEarly: false });
+};
