@@ -51,20 +51,20 @@ test('throw error when joi schema fails', async () => {
   }
 });
 
-test('return with errors when async schema fails', async () => {
+test('throw error when async schema fails', async () => {
   expect.assertions(3);
   try {
     const validator = asyncValidation({
       string: Joi.string(),
     }, {
-      string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
+      string: (value, options) => Promise.reject(new Error('message', 'type')),
     });
 
     const res = await validator({string: 'hello'}, mockOptions)
   }
   catch (error) {
-    expect(error.details[0].message).toEqual('message');
-    expect(error.isJoi).toBeFalsy();
+    expect(error.details[0].message).toEqual('"\string\" message');
+    expect(error.isJoi).toBe(true);
     expect(typeof error).toBe('object');
   }
 });
@@ -88,13 +88,13 @@ test('error type matches type from validator', async () => {
     const validator = asyncValidation({
       string: Joi.string(),
     }, {
-      string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
+      string: (value, options) => Promise.reject(new Error('message', 'type')),
     });
 
     const res = await validator({string: 'hello'}, mockOptions)
   }
   catch (error) {
-    expect(error.details[0].type).toBe('type');
+    expect(error.details[0].type).toBe('ValidationError.message');
   }
 });
 
@@ -147,13 +147,13 @@ test('throws an error when arrays of async validators are used and one fails', a
   }, {
     string: [
       (value, options) => Promise.resolve('hello'),
-      (value, options) => Promise.reject(new ValidationError('message', 'type')),
+      (value, options) => Promise.reject(new Error('message')),
     ]
   });
   const res = await validator({string: 'hello'}, mockOptions);
   }
   catch (error) {
     expect(typeof error).toBe('object');
-    expect(error.details[0].type).toBe('type')
+    expect(error.details[0].type).toBe('ValidationError.message')
   }
 });
