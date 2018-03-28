@@ -1,64 +1,81 @@
-const RowExistsFactory = require('../../src/bookshelf/row-exists');
-const getMockBookshelf = require('../../__mocks__/getMockBookshelf');
+const RowExistsFactory = require('../../src/objection/row-exists');
+const getMockObjection= require('../../__mocks__/getMockObjection');
 const mockOptions = require('../../__mocks__/mockOptions');
 
-test(`injecting bookshelf returns a function and doesn't crash`, () => {
-  const RowExists = RowExistsFactory(getMockBookshelf().bookshelf);
+test(`injecting objection + validation options returns a function and doesn't crash`, () => {
+const Model = getMockObjection(['value']).Model;
+  const RowExists = RowExistsFactory(Model, 'column', 'message', 'constraintOptions');
   expect(typeof RowExists).toBe('function');
 });
 
-test(`injecting bookshelf + validation options returns a function and doesn't crash`, () => {
-  const RowExists = RowExistsFactory(getMockBookshelf().bookshelf);
-  expect(typeof RowExists('model-name', 'column', 'message')).toBe('function');
+test(`Model methods are called the expected number of times with the right args`, async () => {
+const mockObjection = getMockObjection(['value']);
+  const Model = mockObjection.Model;
+  const RowExists = RowExistsFactory(Model, 'column', 'message', {fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
+
+  const {query, where, eager, eagerAlgorithm, eagerOptions } = mockObjection.functions;
+  expect.assertions(10);
+  await RowExists(['value'], mockOptions)
+  expect(query.mock.calls.length).toBe(1);
+  expect(where.mock.calls.length).toBe(1);
+  expect(where.mock.calls[0][0]).toEqual('column');
+  expect(where.mock.calls[0][1]).toEqual('=');
+  expect(where.mock.calls[0][2]).toEqual(['value']);
+  expect(eager.mock.calls.length).toBe(1);
+  expect(eager.mock.calls[0][0]).toEqual('eager');
+  expect(eagerAlgorithm.mock.calls.length).toBe(1);
+  expect(eagerOptions.mock.calls.length).toBe(1);
+  expect(eagerOptions.mock.calls[0][0]).toEqual({option: 'example'});
+
 });
 
-test(`bookshelf methods are called the expected number of times with the right args`, () => {
-  const bookshelfMocks = getMockBookshelf('return value');
-  const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
+test(`Result is returned when found`, async () => {
+  const mockObjection = getMockObjection(['value']);
+  const Model = mockObjection.Model;
+  const RowExists = RowExistsFactory(Model, 'column', 'message', { convert: true, fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
+  // const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
 
-  expect.assertions(5);
-  return RowExists('model-name', 'column', 'message')('value', mockOptions)
-    .then(value => {
-      const { model, where, fetch } = bookshelfMocks.functions;
-      expect(model.mock.calls.length).toBe(1);
-      expect(model.mock.calls[0][0]).toBe('model-name');
-
-      expect(where.mock.calls.length).toBe(1);
-      expect(where.mock.calls[0][0]).toEqual({column: 'value'});
-
-      expect(fetch.mock.calls.length).toBe(1);
-    });
-});
-
-test(`validation succeeds when the row exists`, () => {
-  const bookshelfMocks = getMockBookshelf('return value');
-  const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
-
+  const results = await RowExists('', mockOptions)
   expect.assertions(1)
-  return RowExists('model-name', 'column', 'message')('value', mockOptions)
-    .then(value => {
-      expect(value).toBe('return value');
-    });
+  expect(results).toBe('value');
 });
 
-test(`validation fails when the row doesn't exist and default error is boom 404`, () => {
-  const bookshelfMocks = getMockBookshelf(false);
-  const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
+test(`validation fails when the row doesn't exist and default error is boom 404`, async () => {
+  const mockObjection = getMockObjection([]);
+  const Model = mockObjection.Model;
+  const RowExists = RowExistsFactory(Model, 'column', 'message', { convert: true, fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
 
   expect.assertions(2);
-  return RowExists('model-name', 'column', 'message')('value', mockOptions)
+  await RowExists('value', mockOptions)
     .catch(error => {
       expect(error.isBoom).toBeTruthy();
       expect(error.output.statusCode).toBe(404);
     });
 });
 
-test(`error returned is a ValidationError when return404 is false`, () => {
-  const bookshelfMocks = getMockBookshelf(false);
-  const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
+test(`error returned is a ValidationError when return404 is false`, async () => {
+  const mockObjection = getMockObjection([]);
+  const Model = mockObjection.Model;
+  const RowExists = RowExistsFactory(Model, 'column', 'message', { return404: false, convert: true, fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
 
   expect.assertions(4);
-  return RowExists('model-name', 'column', 'message', { return404: false })('value', mockOptions)
+  await RowExists('value', mockOptions)
     .catch(error => {
       expect(error.isBoom).toBeFalsy();
       expect(error.name).toBe('ValidationError');
@@ -67,12 +84,17 @@ test(`error returned is a ValidationError when return404 is false`, () => {
     });
 });
 
-test('value is untouched if convert option is false', () => {
-  const bookshelfMocks = getMockBookshelf('return value');
-  const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
+test('value is untouched if convert option is false', async () => {
+  const mockObjection = getMockObjection(['value']);
+  const Model = mockObjection.Model;
+  const RowExists = RowExistsFactory(Model, 'column', 'message', { return404: false, convert: false , fetchOptions: {
+    eagerOptions: {option: 'example'},
+    eagerAlgorithm: 'myalgorithm',
+    eager: 'eager',
+  }});
 
   expect.assertions(1)
-  return RowExists('model-name', 'column', 'message', { convert: false })('value', mockOptions)
+  return RowExists('value', mockOptions)
     .then(value => {
       expect(value).toBe('value');
     });
