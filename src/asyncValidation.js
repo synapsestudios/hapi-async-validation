@@ -7,11 +7,6 @@ const callValidator = (validator, values, path, options, errors) => {
       values[path] = newValue;
     })
     .catch(err => {
-      // if (err.name !== 'ValidationError') {
-      //   // A real error happened
-      //   throw err;
-      // }
-
       errors.details.push({
         path: [path],
         message: err.message,
