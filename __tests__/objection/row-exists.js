@@ -41,7 +41,6 @@ test(`Result is returned when found`, async () => {
     eagerAlgorithm: 'myalgorithm',
     eager: 'eager',
   }});
-  // const RowExists = RowExistsFactory(bookshelfMocks.bookshelf);
 
   const results = await RowExists('', mockOptions)
   expect.assertions(1)
