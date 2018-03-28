@@ -1,6 +1,6 @@
-const RowExistsWhereFactory = require('../src/bookshelf/row-exists-where');
-const getMockBookshelf = require('../__mocks__/getMockBookshelf');
-const mockOptions = require('../__mocks__/mockOptions');
+const RowExistsWhereFactory = require('../../src/bookshelf/row-exists-where');
+const getMockBookshelf = require('../../__mocks__/getMockBookshelf');
+const mockOptions = require('../../__mocks__/mockOptions');
 mockOptions.context.params.id = 1;
 
 test(`injecting bookshelf returns a function and doesn't crash`, () => {
