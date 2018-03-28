@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const ValidationError = require('./ValidationError');
 
 const callValidator = (validator, values, path, options, errors) => {
   return validator(values[path], options)
@@ -7,13 +6,12 @@ const callValidator = (validator, values, path, options, errors) => {
       values[path] = newValue;
     })
     .catch(err => {
-      if (err.name !== 'ValidationError') {
-        // A real error happened
-        throw err;
+      if (err.name !== 'ValidationError') { // A real error happened
+        return values;
       }
 
       errors.details.push({
-        path: path,
+        path: [path],
         message: err.message,
         type: err.type,
         data: err.data,
@@ -23,7 +21,7 @@ const callValidator = (validator, values, path, options, errors) => {
         return err;
       }
     });
-};
+}
 
 // Mix JOI validation with our own custom validators
 const asyncValidation = (joiSchema, customSchema) => {
@@ -31,38 +29,38 @@ const asyncValidation = (joiSchema, customSchema) => {
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
 
-    const validated = Joi.validate(values, schema, options);
+    return Joi.validate(values, schema, options, (errors, values) => {
+      if (errors && options.abortEarly) {
+        return errors;
+      } else if (! errors) {
+        errors = new Error();
+        errors.details = [];
+      }
 
-    if (validated.error) {
-      return validated;
-    }
+      const promises = Object.keys(customSchema).reduce((accumulator, path) => {
+        if (! values[path]) {
+          return accumulator;
+        }
 
-    const errors = new Error('ValidationError');
-    errors.details = [];
-    const promises = Object.keys(customSchema).reduce((accumulator, path) => {
-      if (!values[path]) {
+        if (Array.isArray(customSchema[path])) {
+          customSchema[path].forEach(validator => {
+            accumulator.push(callValidator(validator, values, path, options, errors))
+          });
+        } else {
+          accumulator.push(callValidator(customSchema[path], values, path, options, errors));
+        }
         return accumulator;
-      }
+      }, []);
 
-      if (Array.isArray(customSchema[path])) {
-        customSchema[path].forEach(validator => {
-          accumulator.push(callValidator(validator, values, path, options, errors));
-        });
-      } else {
-        accumulator.push(callValidator(customSchema[path], values, path, options, errors));
-      }
-      return accumulator;
-    }, []);
-
-    const all = await Promise.all(promises).then(results => {
-      if (errors.details.length) {
-        const JoiErrorMessage = ValidationError.JoiFactory(errors.details);
-        return JoiErrorMessage;
-      } else {
-        return values;
-      }
+      return Promise.all(promises)
+        .then(() => {
+          if (errors.details.length) {
+            throw errors;
+          } else {
+            return values;
+          }
+        })
     });
-    return all;
   };
 
   validationFunction.joiSchema = joiSchema;
