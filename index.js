@@ -1,6 +1,7 @@
 module.exports = {
   asyncValidation: require('./src/asyncValidation'),
   ValidationError: require('./src/ValidationError'),
+  JoiFactory: require('./src/JoiFactory'),
   bookshelf: {
     rowExistsWhere: require('./src/bookshelf/row-exists-where'),
     rowExists: require('./src/bookshelf/row-exists'),
