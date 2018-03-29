@@ -1,3 +1,4 @@
+/* eslint no-undef: "off" */
 const asyncValidation = require('../src/asyncValidation');
 const Joi = require('joi');
 const ValidationError = require('../src/ValidationError');
@@ -11,6 +12,7 @@ const mockOptions = {
       'user-agent': 'Paw/3.1.2 (Macintosh; OS X/10.12.5) GCDHTTPRequest',
       'content-length': '15'
     },
+    abortEarly: true,
     params: {},
     query: {},
     auth: {
@@ -33,75 +35,70 @@ test(`returns a function and doesn't crash`, () => {
   expect(typeof validator).toBe('function');
 });
 
-test('calls next with errors when joi schema fails', () => {
-  const validator = asyncValidation({
-    string: Joi.string(),
-  }, {
-    string: (value, options) => Promise.resolve(123),
-  });
+test('throw error when joi schema fails', async () => {
+  try {
+    const validator = asyncValidation({
+      string: Joi.string(),
+    }, {
+      string: (value, options) => Promise.resolve(123),
+    });
 
-  const next = jest.fn();
+    const res = await validator({string: 123}, mockOptions);
+  }
+  catch (error) {
+    expect(error.isJoi).toBeTruthy();
+    expect(error.name).toMatch('ValidationError');
+  }
+});
+
+test('return with errors when async schema fails', async () => {
   expect.assertions(3);
-  return validator({string: 123}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBeTruthy();
-      expect(next.mock.calls[0][0].isJoi).toBe(true);
+  try {
+    const validator = asyncValidation({
+      string: Joi.string(),
+    }, {
+      string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
     });
+
+    const res = await validator({string: 'hello'}, mockOptions)
+  }
+  catch (error) {
+    expect(error.details[0].message).toEqual('message');
+    expect(error.isJoi).toBeFalsy();
+    expect(typeof error).toBe('object');
+  }
 });
 
-test('calls next with errors when async schema fails', () => {
-  const validator = asyncValidation({
-    string: Joi.string(),
-  }, {
-    string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
-  });
-
-  expect.assertions(2);
-  const next = jest.fn();
-  return validator({string: 'hello'}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBeTruthy();
-    });
-});
-
-test('calls next with null when joi and async schema passes', () => {
+test('returns with null when joi and async schema passes', async () => {
   const validator = asyncValidation({
     string: Joi.string(),
   }, {
     string: (value, options) => Promise.resolve('hello'),
   });
 
-  expect.assertions(3);
-  const next = jest.fn();
-  return validator({string: 'hello'}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBe(null);
-      expect(next.mock.calls[0][1]).toEqual({
-        string: 'hello',
-      });
-    });
-});
-
-test('error type matches type from validator', () => {
-  const validator = asyncValidation({
-    string: Joi.string(),
-  }, {
-    string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
-  });
-
   expect.assertions(2);
-  const next = jest.fn();
-  return validator({string: 'hello'}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0].details[0].type).toBe('type');
-    });
+  const res = await validator({string: 'hello'}, mockOptions)
+  expect(typeof res).toBe('object');
+  expect(res).toEqual({ string: 'hello' });
 });
 
-test('joiSchema exposed and matches passed schema', () => {
+test('error type matches type from validator', async () => {
+  expect.assertions(1);
+  try {
+    const validator = asyncValidation({
+      string: Joi.string(),
+    }, {
+      string: (value, options) => Promise.reject(new ValidationError('message', 'type')),
+    });
+
+    const res = await validator({string: 'hello'}, mockOptions)
+  }
+  catch (error) {
+    expect(error.details[0].type).toBe('type');
+  }
+});
+
+test('joiSchema exposed and matches passed schema', async () => {
   const joiSchema = {
     string: Joi.string(),
   };
@@ -110,29 +107,23 @@ test('joiSchema exposed and matches passed schema', () => {
     string: (value, options) => Promise.resolve('hello'),
   });
 
+  expect.assertions(1);
   expect(validator.joiSchema).toEqual(joiSchema);
 });
 
-test('next is called with values matching values from validators', () => {
+test('validator is called returning values matching values from validators', async () => {
   const validator = asyncValidation({
     string: Joi.string(),
   }, {
     string: (value, options) => Promise.resolve('new value'),
   });
 
-  expect.assertions(3);
-  const next = jest.fn();
-  return validator({string: 'hello'}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBe(null);
-      expect(next.mock.calls[0][1]).toEqual({
-        string: 'new value',
-      });
-    });
+  expect.assertions(1);
+  const res = await validator({string: 'hello'}, mockOptions);
+  expect(res).toEqual({ string: 'new value' });
 });
 
-test('next is called with no errors when arrays of async validators are used', () => {
+test('next is called with no errors when arrays of async validators are used', async () => {
   const validator = asyncValidation({
     string: Joi.string(),
   }, {
@@ -143,15 +134,14 @@ test('next is called with no errors when arrays of async validators are used', (
   });
 
   expect.assertions(2);
-  const next = jest.fn();
-  return validator({string: 'hello'}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBe(null);
-    });
+  const res = await validator({string: 'hello'}, mockOptions);
+  expect(res).not.toBeUndefined();
+  expect(typeof res).toBe('object');
 });
 
-test('next is called with errors when arrays of async validators are used and one fails', () => {
+test('throws an error when arrays of async validators are used and one fails', async () => {
+  expect.assertions(2);
+  try {
   const validator = asyncValidation({
     string: Joi.string(),
   }, {
@@ -160,12 +150,10 @@ test('next is called with errors when arrays of async validators are used and on
       (value, options) => Promise.reject(new ValidationError('message', 'type')),
     ]
   });
-
-  expect.assertions(2);
-  const next = jest.fn();
-  return validator({string: 'hello'}, mockOptions, next)
-    .then(() => {
-      expect(next.mock.calls.length).toBe(1);
-      expect(next.mock.calls[0][0]).toBeTruthy();
-    });
+  const res = await validator({string: 'hello'}, mockOptions);
+  }
+  catch (error) {
+    expect(typeof error).toBe('object');
+    expect(error.details[0].type).toBe('type')
+  }
 });

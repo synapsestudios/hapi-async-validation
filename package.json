@@ -1,6 +1,6 @@
 {
   "name": "@synapsestudios/hapi-async-validation",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Function and validators to handle asynchronous validation in hapi routes",
   "main": "index.js",
   "scripts": {
@@ -20,12 +20,12 @@
   },
   "homepage": "https://github.com/synapsestudios/hapi-async-validation#readme",
   "peerDependencies": {
-    "hapi": "^16.1.0"
+    "hapi": "^17.2.2"
   },
   "devDependencies": {
     "eslint": "^4.3.0",
     "eslint-plugin-jest": "^20.0.3",
-    "hapi": "^16.5.0",
+    "hapi": "^17.2.2",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
   },
