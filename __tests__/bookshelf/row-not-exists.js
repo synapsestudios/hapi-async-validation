@@ -1,6 +1,6 @@
-const RowNotExistsFactoryy = require('../src/bookshelf/row-not-exists');
-const getMockBookshelf = require('../__mocks__/getMockBookshelf');
-const mockOptions = require('../__mocks__/mockOptions');
+const RowNotExistsFactoryy = require('../../src/bookshelf/row-not-exists');
+const getMockBookshelf = require('../../__mocks__/getMockBookshelf');
+const mockOptions = require('../../__mocks__/mockOptions');
 
 test(`injecting bookshelf returns a function and doesn't crash`, () => {
   const RowNotExists = RowNotExistsFactoryy(getMockBookshelf().bookshelf);

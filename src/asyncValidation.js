@@ -34,8 +34,9 @@ const asyncValidation = (joiSchema, customSchema) => {
 
     const errors = new Error('ValidationError');
     errors.details = [];
+
     const promises = Object.keys(customSchema).reduce((accumulator, path) => {
-      if (!values[path]) {
+      if (! values[path]) {
         return accumulator;
       }
 
@@ -49,7 +50,7 @@ const asyncValidation = (joiSchema, customSchema) => {
       return accumulator;
     }, []);
 
-    const all = await Promise.all(promises).then(results => {
+    return Promise.all(promises).then(results => {
       if (errors.details.length) {
         const JoiErrorMessage = JoiFactory(errors.details);
         return JoiErrorMessage;
@@ -57,7 +58,6 @@ const asyncValidation = (joiSchema, customSchema) => {
         return values;
       }
     });
-    return all;
   };
 
   validationFunction.joiSchema = joiSchema;

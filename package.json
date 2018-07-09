@@ -1,6 +1,6 @@
 {
   "name": "@synapsestudios/hapi-async-validation",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Function and validators to handle asynchronous validation in hapi routes",
   "main": "index.js",
   "scripts": {

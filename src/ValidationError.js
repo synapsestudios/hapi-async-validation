@@ -1,7 +1,7 @@
 const ValidationError = function(message, type, data) {
   this.name = 'ValidationError';
   this.message = message;
-  this.stack = new Error().stack;
+  this.stack = (new Error()).stack;
   this.type = type;
 
   if (data) {
