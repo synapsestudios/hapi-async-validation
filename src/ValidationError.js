@@ -3,6 +3,7 @@ const ValidationError = function(message, type, data) {
   this.message = message;
   this.stack = (new Error()).stack;
   this.type = type;
+  this.details = [];
 
   if (data) {
     this.data = data;
