@@ -37,11 +37,9 @@ module.exports = (joiSchema, customSchema) => {
         type: details.type,
         context: details.context,
       }));
-
-      throw error;
+    } else {
+      error = new ValidationError('ValidationError');
     }
-
-    error = new ValidationError('ValidationError');
 
     const promises = Object.keys(customSchema).reduce((accumulator, path) => {
       if (!values[path]) {
