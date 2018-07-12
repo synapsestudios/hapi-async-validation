@@ -38,7 +38,7 @@ module.exports = (joiSchema, customSchema, overrides = {}) => {
         const override = get(overrides, details.path, {});
 
         if (override.always404) {
-          throw new Boom.notFound('Row does not exist');
+          throw Boom.notFound('Row does not exist');
         }
 
         return ({
