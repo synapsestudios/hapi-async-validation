@@ -35,10 +35,10 @@ module.exports = (joiSchema, customSchema, overrides = {}) => {
 
     if (error) {
       error.details = error.details.map(details => {
-        const override = get(overrides, details.path, {});
+        const { castJoiTo404 } = get(overrides, details.path, {});
 
-        if (override.always404) {
-          throw Boom.notFound('Row does not exist');
+        if (castJoiTo404) {
+          throw Boom.notFound(castJoiTo404.message || 'Row does not exist');
         }
 
         return ({
