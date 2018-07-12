@@ -1,4 +1,6 @@
 const Joi = require('joi');
+const Boom = require('boom');
+const get = require('lodash/get');
 const ValidationError = require('./ValidationError');
 
 const callValidator = async (validator, values, path, options, error) => {
@@ -24,7 +26,7 @@ const callValidator = async (validator, values, path, options, error) => {
 };
 
 // Mix JOI validation with our own custom validators
-module.exports = (joiSchema, customSchema) => {
+module.exports = (joiSchema, customSchema, overrides = {}) => {
   const validationFunction = async (values, options) => {
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
@@ -32,14 +34,24 @@ module.exports = (joiSchema, customSchema) => {
     let { error } = await Joi.validate(values, schema, options);
 
     if (error) {
-      error.details = error.details.map(details => ({
-        path: [details.path],
-        type: details.type,
-        context: details.context,
-      }));
-    } else {
-      error = new ValidationError('ValidationError');
+      error.details = error.details.map(details => {
+        const override = get(overrides, details.path, {});
+
+        if (override.always404) {
+          throw new Boom.notFound('Row does not exist');
+        }
+
+        return ({
+          path: Array.isArray(details.path) ? details.path : details.path.split('.'),
+          type: details.type,
+          context: details.context,
+        });
+      });
+
+      throw error;
     }
+
+    error = new ValidationError('ValidationError');
 
     const promises = Object.keys(customSchema).reduce((accumulator, path) => {
       if (!values[path]) {
