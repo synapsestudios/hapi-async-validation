@@ -1,39 +1,24 @@
 const Boom = require('boom');
+
+const getObjectionOptions = require('./get-objection-options');
 const ValidationError = require('../ValidationError');
-const merge = require('lodash/merge');
 
-module.exports = (Model, column, message, constraintOptions) => (value, validatorOptions) => {
-  // WhereInEagerAlgorithm is Objection's default.
-  const options = merge(
-    {
-      convert: true,
-      return404: true,
-      fetchOptions: { eager: '', eagerOptions: {}, eagerAlgorithm: 'WhereInEagerAlgorithm' },
-    },
-    validatorOptions || {},
-    constraintOptions || {}
-  );
+module.exports = (Model, column, message, constraintOptions) => async (value, validatorOptions) => {
+  const options = getObjectionOptions(validatorOptions, constraintOptions);
 
-  return Model.query()
+  const rows = await Model.query()
     .where(column, '=', value)
     .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm])
     .eagerOptions(options.fetchOptions.eagerOptions || {})
-    .eager(options.fetchOptions.eager)
-    .then(function(rows) {
-      if (rows.length === 0) {
-        let throwable;
-        if (options.return404) {
-          throwable = Boom.notFound(message || 'Row does not exist');
-        } else {
-          throwable = new ValidationError(message || 'Row does not exist', 'rowExists');
-        }
-        throw throwable;
-      } else {
-        if (options.convert === true) {
-          return rows[0];
-        } else {
-          return value;
-        }
-      }
-    });
+    .eager(options.fetchOptions.eager);
+
+  if (!rows.length) {
+    if (options.return404) {
+      throw Boom.notFound(message || 'Row does not exist');
+    } else {
+      throw new ValidationError(message || 'Row does not exist', 'rowExists');
+    }
+  }
+
+  return options.convert ? rows[0] : value;
 };

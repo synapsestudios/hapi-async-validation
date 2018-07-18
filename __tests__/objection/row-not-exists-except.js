@@ -35,7 +35,6 @@ test(`Model methods are called the expected number of times with the right args`
       expect(where.mock.calls[0][1]).toEqual('=');
       expect(where.mock.calls[0][2]).toEqual('value');
       expect(where.mock.calls[1][0]).toBe('except-column');
-      console.log(where.mock.calls[1][2]);
       expect(where.mock.calls[1][2]).toBe(1);
     });
 });

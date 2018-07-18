@@ -51,7 +51,7 @@ test(`validation succeeds when the row exists`, () => {
   expect.assertions(1)
   return RowExistsWhere('value', mockOptions)
     .then(value => {
-      expect(value).toEqual(['value']);
+      expect(value).toEqual('value');
     });
 });
 

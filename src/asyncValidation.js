@@ -1,70 +1,83 @@
 const Joi = require('joi');
+const Boom = require('boom');
+const get = require('lodash/get');
+const ValidationError = require('./ValidationError');
 
-const callValidator = (validator, values, path, options, errors) => {
-  return validator(values[path], options)
-    .then(newValue => {
-      values[path] = newValue;
-    })
-    .catch(err => {
-      if (err.name !== 'ValidationError') { // A real error happened
-        return values;
-      }
+const callValidator = async (validator, values, path, options, error) => {
+  try {
+    const newValue = await validator(values[path], options);
+    values[path] = newValue;
+  } catch(err) {
+    if (err.name !== 'ValidationError') {
+      throw err;
+    }
 
-      errors.details.push({
-        path: [path],
-        message: err.message,
-        type: err.type,
-        data: err.data,
-      });
-
-      if (options.abortEarly) {
-        return err;
-      }
+    error.details.push({
+      path: [path],
+      message: err.message,
+      type: err.type,
+      data: err.data,
     });
-}
+
+    if (options.abortEarly) {
+      throw err;
+    }
+  }
+};
 
 // Mix JOI validation with our own custom validators
-const asyncValidation = (joiSchema, customSchema) => {
+module.exports = (joiSchema, customSchema, overrides = {}) => {
   const validationFunction = async (values, options) => {
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
 
-    return Joi.validate(values, schema, options, (errors, values) => {
-      if (errors && options.abortEarly) {
-        return errors;
-      } else if (! errors) {
-        errors = new Error();
-        errors.details = [];
+    let { error } = await Joi.validate(values, schema, options);
+
+    if (error) {
+      error.details = error.details.map(details => {
+        const { castJoiTo404 } = get(overrides, details.path, {});
+
+        if (castJoiTo404) {
+          throw Boom.notFound(castJoiTo404.message || 'Row does not exist');
+        }
+
+        return ({
+          path: Array.isArray(details.path) ? details.path : details.path.split('.'),
+          type: details.type,
+          context: details.context,
+        });
+      });
+
+      throw error;
+    }
+
+    error = new ValidationError('ValidationError');
+
+    const promises = Object.keys(customSchema).reduce((accumulator, path) => {
+      if (!values[path]) {
+        return accumulator;
       }
 
-      const promises = Object.keys(customSchema).reduce((accumulator, path) => {
-        if (! values[path]) {
-          return accumulator;
-        }
+      if (Array.isArray(customSchema[path])) {
+        customSchema[path].forEach(validator => {
+          accumulator.push(callValidator(validator, values, path, options, error));
+        });
+      } else {
+        accumulator.push(callValidator(customSchema[path], values, path, options, error));
+      }
 
-        if (Array.isArray(customSchema[path])) {
-          customSchema[path].forEach(validator => {
-            accumulator.push(callValidator(validator, values, path, options, errors))
-          });
-        } else {
-          accumulator.push(callValidator(customSchema[path], values, path, options, errors));
-        }
-        return accumulator;
-      }, []);
+      return accumulator;
+    }, []);
 
-      return Promise.all(promises)
-        .then(() => {
-          if (errors.details.length) {
-            throw errors;
-          } else {
-            return values;
-          }
-        })
-    });
+    await Promise.all(promises);
+
+    if (error.details.length) {
+      throw error;
+    }
+
+    return values;
   };
 
   validationFunction.joiSchema = joiSchema;
   return validationFunction;
 };
-
-module.exports = asyncValidation;
