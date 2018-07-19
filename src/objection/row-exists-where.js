@@ -1,41 +1,31 @@
 const Boom = require('boom');
-const get = require('lodash.get');
-const merge = require('lodash/merge');
+const get = require('lodash/get');
+
+const getObjectionOptions = require('./get-objection-options');
 const ValidationError = require('../ValidationError');
 
 module.exports = (Model, column, whereColumn, contextValuePath, message, constraintOptions) =>
-  function(value, validatorOptions) {
-    const options = merge(
-      {
-        convert: true,
-        return404: true,
-        fetchOptions: { eager: '', eagerOptions: {}, eagerAlgorithm: 'WhereInEagerAlgorithm' },
-      },
-      validatorOptions || {},
-      constraintOptions || {}
-    );
+  async (value, validatorOptions) => {
+    const options = getObjectionOptions(validatorOptions, constraintOptions);
     const contextValue = get(options.context, contextValuePath);
-
     const query = Model.query().where(column, '=', value);
 
     if (typeof contextValue !== 'undefined') {
       query.where(whereColumn, '=', contextValue);
     }
-    return query
+
+    const rows = await query
       .eagerAlgorithm(Model[options.fetchOptions.eagerAlgorithm])
       .eagerOptions(options.fetchOptions.eagerOptions)
-      .eager(options.fetchOptions.eager)
-      .then(function(rows) {
-        if (rows.length === 0) {
-          let throwable;
-          if (options.return404) {
-            throwable = Boom.notFound(message || 'Row does not exist');
-          } else {
-            throwable = new ValidationError(message || 'Row does not exist', 'rowExists');
-          }
-          throw throwable;
-        } else {
-          return options.convert ? rows : value;
-        }
-      });
+      .eager(options.fetchOptions.eager);
+
+    if (!rows.length) {
+      if (options.return404) {
+        throw Boom.notFound(message || 'Row does not exist');
+      } else {
+        throw new ValidationError(message || 'Row does not exist', 'rowExists');
+      }
+    }
+
+    return options.convert ? rows[0] : value;
   };
