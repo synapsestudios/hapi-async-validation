@@ -1,3 +1,7 @@
+## [v3.0.0] - 2020-07-07
+### Added
+[#13](https://github.com/synapsestudios/hapi-async-validation/pull/28) Upgrade Hapi ecosystem dependencies to Hapi latest namespaced versions
+
 ## [v2.1.0] - 2018-07-19
 ### Added
 [#12](https://github.com/synapsestudios/hapi-async-validation/pull/17) Added override to cast Joi errors as 404, when needed
