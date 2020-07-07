@@ -1,5 +1,5 @@
-const Hapi = require('hapi');
-const Joi = require('joi');
+const Hapi = require('@hapi/hapi');
+const Joi = require('@hapi/joi');
 const asyncValidation = require('../index').asyncValidation;
 
 const server = new Hapi.Server();

@@ -1,6 +1,6 @@
 /* eslint no-undef: "off" */
 const asyncValidation = require('../src/asyncValidation');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 
 const getMockOptions = () => ({
   context: {
