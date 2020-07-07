@@ -23,15 +23,15 @@
     "hapi": "^17.2.2"
   },
   "devDependencies": {
-    "@hapi/hapi": "^19.1.1",
-    "@hapi/joi": "^17.1.1",
-    "@hapi/boom": "^9.1.0",
     "eslint": "^4.3.0",
     "eslint-plugin-jest": "^20.0.3",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
   },
   "dependencies": {
+    "@hapi/hapi": "^19.1.1",
+    "@hapi/joi": "^17.1.1",
+    "@hapi/boom": "^9.1.0",
     "lodash.get": "^4.4.2"
   }
 }
