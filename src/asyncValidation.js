@@ -1,5 +1,5 @@
-const Joi = require('joi');
-const Boom = require('boom');
+const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 const get = require('lodash/get');
 const ValidationError = require('./ValidationError');
 
@@ -31,7 +31,7 @@ module.exports = (joiSchema, customSchema, overrides = {}) => {
     const schema = Joi.object().keys(joiSchema);
     options.context.values = values;
 
-    let { error } = await Joi.validate(values, schema, options);
+    let { error } = await schema.validate(values, options);
 
     if (error) {
       error.details = error.details.map(details => {

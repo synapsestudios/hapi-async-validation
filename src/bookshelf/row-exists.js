@@ -1,4 +1,4 @@
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const ValidationError = require('../ValidationError');
 
 module.exports = bookshelf => (modelName, column, message, constraintOptions) => (value, validatorOptions) => {
