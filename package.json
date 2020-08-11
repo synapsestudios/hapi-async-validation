@@ -1,6 +1,6 @@
 {
   "name": "@synapsestudios/hapi-async-validation",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Function and validators to handle asynchronous validation in hapi routes",
   "main": "index.js",
   "scripts": {
@@ -25,11 +25,13 @@
   "devDependencies": {
     "eslint": "^4.3.0",
     "eslint-plugin-jest": "^20.0.3",
-    "hapi": "^17.2.2",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
   },
   "dependencies": {
+    "@hapi/hapi": "^19.1.1",
+    "@hapi/joi": "^17.1.1",
+    "@hapi/boom": "^9.1.0",
     "lodash.get": "^4.4.2"
   }
 }
